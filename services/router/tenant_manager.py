@@ -146,3 +146,38 @@ class TenantManager:
             return False, "Rate limit exceeded: per hour quota"
 
         return True, "OK"
+
+    async def detect_noisy_neighbor(
+            self,
+            tenant_id: str,
+            threshold: float = 0.5
+    ) -> bool:
+        metrics = await self.get_tenant_metrics(tenant_id)
+
+        total_usage_key = f"tenant_id:{tenant_id};usage:total:hour:{int(time.time() / 3600)}"
+        total_usage = int(await self.redis.get(total_usage_key) or 0)
+
+        if total_usage == 0:
+            return False
+
+        tenant_share = metrics["current_hour"] / total_usage
+
+        if tenant_share > threshold:
+            logger.warning(
+                "noisy_neighbor_detected",
+                tenant_id=tenant_id,
+                tenant_share=tenant_share,
+                threshold=threshold,
+                current_hour_requests=metrics["current_hour"],
+                total_requests=total_usage
+            )
+            return True
+
+        return False
+
+    async def record_request(self, tenant_id: str):
+        current_time = time.time()
+        total_usage_key = f"tenant_id:{tenant_id};usage:total:hour:{int(current_time / 3600)}"
+
+        await self.redis.incr(total_usage_key)
+        await self.redis.expire(total_usage_key, 7200)
