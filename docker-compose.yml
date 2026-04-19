@@ -38,6 +38,74 @@ services:
       - prometheus
 
 
+  router:
+    build:
+      context: .
+      dockerfile: services/router/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SCHEDULER_URL=http://scheduler:8001
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: services/scheduler/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+      - AUTOSCALE_ENABLED=true
+      - MIN_WORKERS=2
+      - MAX_WORKERS=10
+      - TARGET_QUEUE_DEPTH=50
+      - TARGET_P95_LATENCY_MS=50
+      - COST_PER_GPU_HOUR=2.5
+      - MAX_COST_PER_HOUR=20
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: services/worker/Dockerfile
+    deploy:
+      replicas: 2
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SCHEDULER_URL=http://scheduler:8001
+      - LOG_LEVEL=INFO
+      - BATCH_SIZE_MAX=32
+      - BATCH_TIMEOUT_MS=50
+      - MODEL_NAME=distilbert-base-uncased
+      - WORKER_WARM_POOL=true
+    depends_on:
+      - scheduler
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+
 networks:
   default:
     name: inference-network
