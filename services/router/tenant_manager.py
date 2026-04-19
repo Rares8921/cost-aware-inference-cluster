@@ -87,3 +87,62 @@ class TenantManager:
             "utilization_minute": int(minute_count) / config.quota_per_minute,
             "utilization_hour": int(hour_count) / config.quota_per_hour,
         }
+
+    async def check_rate_limit(
+            self,
+            tenant_id: str,
+            num_requests: int = 1
+    ) -> tuple[bool, str]:
+        config = self.get_tenant_config(tenant_id)
+
+        current_time = time.time()
+
+        second_key = f"ratelimit:{tenant_id}:second:{int(current_time)}"
+        minute_key = f"ratelimit:{tenant_id}:minute:{int(current_time / 60)}"
+        hour_key = f"ratelimit:{tenant_id}:hour:{int(current_time / 3600)}"
+
+        pipe = self.redis.pipeline()
+        pipe.incr(second_key, num_requests)
+        pipe.expire(second_key, 2)
+        pipe.incr(minute_key, num_requests)
+        pipe.expire(minute_key, 120)
+        pipe.incr(hour_key, num_requests)
+        pipe.expire(hour_key, 7200)
+
+        results = await pipe.execute()
+
+        second_count = results[0]
+        minute_count = results[2]
+        hour_count = results[4]
+
+        if second_count > config.quota_per_second:
+            logger.warning(
+                "rate_limit_exceeded",
+                tenant_id=tenant_id,
+                window="second",
+                count=second_count,
+                limit=config.quota_per_second
+            )
+            return False, "Rate limit exceeded: per second quota"
+
+        if minute_count > config.quota_per_minute:
+            logger.warning(
+                "rate_limit_exceeded",
+                tenant_id=tenant_id,
+                window="minute",
+                count=minute_count,
+                limit=config.quota_per_minute
+            )
+            return False, "Rate limit exceeded: per minute quota"
+
+        if hour_count > config.quota_per_hour:
+            logger.warning(
+                "rate_limit_exceeded",
+                tenant_id=tenant_id,
+                window="hour",
+                count=hour_count,
+                limit=config.quota_per_hour
+            )
+            return False, "Rate limit exceeded: per hour quota"
+
+        return True, "OK"
