@@ -15,7 +15,7 @@ async def tenant_manager():
     await tm.disconnect()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_rate_limit_per_second(tenant_manager):
     tenant_id = "test_tenant_1"
 
@@ -28,7 +28,7 @@ async def test_rate_limit_per_second(tenant_manager):
     assert "per second" in msg
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_tenant_config(tenant_manager):
     config = tenant_manager.get_tenant_config("new_tenant")
 
@@ -38,7 +38,7 @@ async def test_tenant_config(tenant_manager):
     assert config.quota_per_hour == 5000
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_tenant_metrics(tenant_manager):
     tenant_id = "metrics_tenant"
 
@@ -51,7 +51,7 @@ async def test_tenant_metrics(tenant_manager):
     assert "utilization_second" in metrics
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_noisy_neighbor_detection(tenant_manager):
     tenant_id = "noisy_tenant"
 

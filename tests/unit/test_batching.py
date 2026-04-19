@@ -8,7 +8,7 @@ def mock_process_fn(texts):
     return [{"result": f"processed_{text}"} for text in texts]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_batch_fills_to_max_size():
     batcher = DynamicBatcher(
         max_batch_size=4,
@@ -40,7 +40,7 @@ async def test_batch_fills_to_max_size():
     await batcher.stop()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_batch_timeout():
     batcher = DynamicBatcher(
         max_batch_size=10,
@@ -69,7 +69,7 @@ async def test_batch_timeout():
     await batcher.stop()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_batch_stats():
     batcher = DynamicBatcher(
         max_batch_size=5,

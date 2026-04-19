@@ -45,7 +45,7 @@ def autoscaler(config, queue_manager, worker_registry, cost_optimizer):
     return Autoscaler(config, queue_manager, worker_registry, cost_optimizer)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_scale_up_on_high_queue_depth(autoscaler, queue_manager, worker_registry):
     for i in range(2):
         worker = WorkerInfo(
@@ -75,7 +75,7 @@ async def test_scale_up_on_high_queue_depth(autoscaler, queue_manager, worker_re
     assert decision == AutoscalingDecision.SCALE_UP
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_scale_down_on_low_queue_depth(autoscaler, queue_manager, worker_registry):
     for i in range(5):
         worker = WorkerInfo(
@@ -93,7 +93,7 @@ async def test_scale_down_on_low_queue_depth(autoscaler, queue_manager, worker_r
     assert decision == AutoscalingDecision.SCALE_DOWN
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_no_scale_on_cost_limit(autoscaler, cost_optimizer):
     for i in range(8):
         cost_optimizer.track_worker_started(f"worker-{i}")
@@ -102,7 +102,7 @@ async def test_no_scale_on_cost_limit(autoscaler, cost_optimizer):
     assert not can_scale
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_scale_up_on_latency_breach(autoscaler):
     decision = await autoscaler._make_scaling_decision(3, 30, 120, 150)
     assert decision == AutoscalingDecision.SCALE_UP

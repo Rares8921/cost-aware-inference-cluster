@@ -1,4 +1,4 @@
-.PHONY: setup run test test-integration test-load test-spike benchmark clean deploy-k8s
+.PHONY: setup run test test-unit test-load test-spike benchmark clean deploy-k8s
 
 setup:
 	pip install -r requirements-dev.txt
@@ -13,10 +13,12 @@ stop:
 	docker-compose down
 
 test:
-	pytest tests/ -v --cov=services --cov-report=html --cov-report=term
+	docker-compose up -d redis
+	pytest tests/ -v
+	docker-compose down redis --remove-orphans
 
-test-integration:
-	pytest tests/test_integration.py -v -s
+test-unit:
+	pytest tests/unit -v -s
 
 test-load:
 	python tests/load_test.py
