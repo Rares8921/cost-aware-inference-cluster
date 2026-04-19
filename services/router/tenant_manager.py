@@ -50,3 +50,40 @@ class TenantManager:
     async def disconnect(self):
         if self.redis:
             await self.redis.close()
+
+    def get_tenant_config(self, tenant_id: str) -> TenantConfig:
+        if tenant_id not in self._tenant_configs:
+            self._tenant_configs[tenant_id] = TenantConfig(
+                tenant_id=tenant_id,
+                quota_per_second=self.default_quota_per_second,
+                quota_per_minute=self.default_quota_per_minute,
+                quota_per_hour=self.default_quota_per_hour,
+                priority=0,
+            )
+        return self._tenant_configs[tenant_id]
+
+    async def get_tenant_metrics(self, tenant_id: str) -> Dict:
+        current_time = time.time()
+
+        second_key = f"ratelimit:{tenant_id}:second:{int(current_time)}"
+        minute_key = f"ratelimit:{tenant_id}:minute:{int(current_time / 60)}"
+        hour_key = f"ratelimit:{tenant_id}:hour:{int(current_time / 3600)}"
+
+        second_count = await self.redis.get(second_key) or 0
+        minute_count = await self.redis.get(minute_key) or 0
+        hour_count = await self.redis.get(hour_key) or 0
+
+        config = self.get_tenant_config(tenant_id)
+
+        return {
+            "tenant_id": tenant_id,
+            "current_second": int(second_count),
+            "current_minute": int(minute_count),
+            "current_hour": int(hour_count),
+            "quota_second": config.quota_per_second,
+            "quota_minute": config.quota_per_minute,
+            "quota_hour": config.quota_per_hour,
+            "utilization_second": int(second_count) / config.quota_per_second,
+            "utilization_minute": int(minute_count) / config.quota_per_minute,
+            "utilization_hour": int(hour_count) / config.quota_per_hour,
+        }
