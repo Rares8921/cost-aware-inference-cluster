@@ -21,12 +21,12 @@ COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
 
-COPY services/router/ ./services/router/
+COPY services/scheduler/ ./services/scheduler/
 
 # permisiuni user
 RUN chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8000
+EXPOSE 8001
 
-CMD ["uvicorn", "services.router.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "services.scheduler.main:app", "--host", "0.0.0.0", "--port", "8001"]
