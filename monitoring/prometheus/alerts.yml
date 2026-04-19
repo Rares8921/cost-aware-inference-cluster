@@ -1,0 +1,75 @@
+groups:
+  - name: inference_alerts
+    interval: 30s
+    rules:
+      - alert: HighQueueDepth
+        expr: scheduler_queue_depth > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High queue depth detected"
+          description: "Queue depth is {{ $value }}, which is above threshold"
+
+      - alert: HighLatencyP95
+        expr: scheduler_latency_p95_ms > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P95 latency detected"
+          description: "P95 latency is {{ $value }}ms"
+
+      - alert: HighLatencyP99
+        expr: scheduler_latency_p99_ms > 200
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical P99 latency detected"
+          description: "P99 latency is {{ $value }}ms, exceeding SLA"
+
+      - alert: LowGPUUtilization
+        expr: worker_gpu_utilization < 0.3
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "Low GPU utilization"
+          description: "GPU utilization is {{ $value }}, consider scaling down"
+
+      - alert: HighCostPerHour
+        expr: scheduler_cost_current_hour > 18
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High cost per hour"
+          description: "Current hour cost is ${{ $value }}, approaching limit"
+
+      - alert: NoActiveWorkers
+        expr: scheduler_active_workers == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No active workers"
+          description: "All workers are down, inference unavailable"
+
+      - alert: RateLimitExceeded
+        expr: rate(router_requests_total{status="rate_limited"}[1m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate limit rejections"
+          description: "Tenant {{ $labels.tenant_id }} is hitting rate limits"
+
+      - alert: ServiceDown
+        expr: up{job=~"router|scheduler|workers"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} is down"
