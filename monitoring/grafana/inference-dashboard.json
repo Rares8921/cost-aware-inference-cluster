@@ -1,0 +1,86 @@
+{
+  "dashboard": {
+    "title": "Inference Cluster Dashboard",
+    "tags": ["inference", "ml"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(router_requests_total[1m])",
+            "legendFormat": "{{tenant_id}} - {{status}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "title": "Queue Depth",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "scheduler_queue_depth",
+            "legendFormat": "Queue Depth"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "title": "Latency Percentiles",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "scheduler_latency_p50_ms",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "scheduler_latency_p95_ms",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "scheduler_latency_p99_ms",
+            "legendFormat": "P99"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "title": "Active Workers",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "scheduler_active_workers",
+            "legendFormat": "Workers"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "title": "Cost Per Hour",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "scheduler_cost_current_hour",
+            "legendFormat": "Current Hour Cost"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "title": "Batch Size",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg(worker_batch_size)",
+            "legendFormat": "Avg Batch Size"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      }
+    ],
+    "refresh": "10s",
+    "schemaVersion": 1,
+    "version": 0
+  }
+}
