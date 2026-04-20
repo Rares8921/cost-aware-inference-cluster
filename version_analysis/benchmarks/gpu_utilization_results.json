@@ -1,0 +1,66 @@
+{
+  "low": {
+    "stats": {
+      "avg_workers": 0.0,
+      "max_workers": 0,
+      "min_workers": 0,
+      "avg_queue_depth": 1115.0,
+      "max_queue_depth": 1230,
+      "avg_processing": 0.0,
+      "estimated_utilization": 0.0
+    },
+    "success_rate": 1.0,
+    "avg_latency_ms": 974.7220983107885,
+    "target_rps": 10,
+    "duration_s": 30,
+    "metrics_count": 24
+  },
+  "medium": {
+    "stats": {
+      "avg_workers": 0.0,
+      "max_workers": 0,
+      "min_workers": 0,
+      "avg_queue_depth": 1365.0,
+      "max_queue_depth": 1490,
+      "avg_processing": 0.0,
+      "estimated_utilization": 0.0
+    },
+    "success_rate": 1.0,
+    "avg_latency_ms": 4324.712245464325,
+    "target_rps": 50,
+    "duration_s": 30,
+    "metrics_count": 6
+  },
+  "high": {
+    "stats": {
+      "avg_workers": 0.0,
+      "max_workers": 0,
+      "min_workers": 0,
+      "avg_queue_depth": 1690.0,
+      "max_queue_depth": 1840,
+      "avg_processing": 0.0,
+      "estimated_utilization": 0.0
+    },
+    "success_rate": 1.0,
+    "avg_latency_ms": 7811.072197556496,
+    "target_rps": 100,
+    "duration_s": 30,
+    "metrics_count": 4
+  },
+  "burst": {
+    "stats": {
+      "avg_workers": 0.0,
+      "max_workers": 0,
+      "min_workers": 0,
+      "avg_queue_depth": 2040.0,
+      "max_queue_depth": 2140,
+      "avg_processing": 0.0,
+      "estimated_utilization": 0.0
+    },
+    "success_rate": 1.0,
+    "avg_latency_ms": 10730.049670934677,
+    "target_rps": 200,
+    "duration_s": 30,
+    "metrics_count": 2
+  }
+}

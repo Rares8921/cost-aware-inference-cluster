@@ -1,0 +1,41 @@
+{
+  "no_batching": {
+    "scenario": "no_batching",
+    "num_requests": 500,
+    "concurrency": 1,
+    "duration_s": 208.63982820510864,
+    "successful": 500,
+    "failed": 0,
+    "throughput": 2.3964743659032464,
+    "avg_active_workers": 0.0,
+    "cost": 0.0,
+    "cost_per_request": 0.0,
+    "metrics": {
+      "avg_active_workers": 0.0,
+      "avg_queue_depth": 225.45255474452554,
+      "avg_processing_count": 0.0,
+      "max_active_workers": 0
+    }
+  },
+  "with_batching": {
+    "scenario": "with_batching",
+    "num_requests": 500,
+    "concurrency": 50,
+    "duration_s": 41.66496229171753,
+    "successful": 500,
+    "failed": 0,
+    "throughput": 12.0004908800648,
+    "avg_active_workers": 0.0,
+    "cost": 0.0,
+    "cost_per_request": 0.0,
+    "metrics": {
+      "avg_active_workers": 0.0,
+      "avg_queue_depth": 732.1111111111111,
+      "avg_processing_count": 0.0,
+      "max_active_workers": 0
+    }
+  },
+  "comparison": {
+    "throughput_improvement_percent": 400.7560711187386
+  }
+}
