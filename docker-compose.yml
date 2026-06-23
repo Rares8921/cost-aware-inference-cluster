@@ -87,7 +87,15 @@ services:
       dockerfile: services/worker/Dockerfile
     deploy:
       replicas: 2
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - REDIS_URL=redis://redis:6379
       - SCHEDULER_URL=http://scheduler:8001
       - LOG_LEVEL=INFO

@@ -19,7 +19,9 @@ COPY requirements.txt .
 
 # cache mount for pip
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 torch==2.5.1+cu121 && \
+    grep -v "^torch==" requirements.txt > requirements-runtime.txt && \
+    pip install --no-cache-dir -r requirements-runtime.txt
 
 COPY services/worker/ ./services/worker/
 
