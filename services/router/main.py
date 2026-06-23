@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import structlog
 import httpx
 from typing import Optional
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Histogram, generate_latest
 
 from .config import RouterConfig
 from .tenant_manager import TenantManager
@@ -148,3 +148,8 @@ async def metrics():
         },
         "scheduler": scheduler_metrics,
     }
+
+
+@app.get("/metrics/prometheus")
+async def prometheus_metrics():
+    return generate_latest()

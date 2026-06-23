@@ -29,15 +29,6 @@ groups:
           summary: "Critical P99 latency detected"
           description: "P99 latency is {{ $value }}ms, exceeding SLA"
 
-      - alert: LowGPUUtilization
-        expr: worker_gpu_utilization < 0.3
-        for: 5m
-        labels:
-          severity: info
-        annotations:
-          summary: "Low GPU utilization"
-          description: "GPU utilization is {{ $value }}, consider scaling down"
-
       - alert: HighCostPerHour
         expr: scheduler_cost_current_hour > 18
         for: 5m

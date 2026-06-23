@@ -40,6 +40,9 @@ requests_total = Counter("scheduler_requests_total", "Total requests")
 queue_depth_gauge = Gauge("scheduler_queue_depth", "Current queue depth")
 active_workers_gauge = Gauge("scheduler_active_workers", "Number of active workers")
 cost_gauge = Gauge("scheduler_cost_current_hour", "Cost in current hour")
+latency_p50_gauge = Gauge("scheduler_latency_p50_ms", "P50 queue processing latency in milliseconds")
+latency_p95_gauge = Gauge("scheduler_latency_p95_ms", "P95 queue processing latency in milliseconds")
+latency_p99_gauge = Gauge("scheduler_latency_p99_ms", "P99 queue processing latency in milliseconds")
 
 
 class InferenceRequest(BaseModel):
@@ -173,6 +176,9 @@ async def metrics():
     queue_depth_gauge.set(queue_metrics.get("queue_depth", 0))
     active_workers_gauge.set(len(active_workers))
     cost_gauge.set(cost_metrics.current_hour_cost)
+    latency_p50_gauge.set(queue_metrics.get("latency_p50", 0))
+    latency_p95_gauge.set(queue_metrics.get("latency_p95", 0))
+    latency_p99_gauge.set(queue_metrics.get("latency_p99", 0))
 
     return {
         "queue": queue_metrics,

@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 import httpx
 import structlog
 from fastapi import FastAPI
+from prometheus_client import Gauge, generate_latest
 from pydantic import BaseModel
 
 from .batch_processor import DynamicBatcher, BatchItem
@@ -29,6 +30,22 @@ model_loader = ModelLoader(config.model_name, config.model_version)
 batcher: DynamicBatcher = None
 
 requests_processed = 0
+
+worker_requests_processed_gauge = Gauge(
+    "worker_requests_processed",
+    "Requests processed by this worker",
+    ["worker_id"],
+)
+worker_batch_size_gauge = Gauge(
+    "worker_batch_size",
+    "Average dynamic batch size observed by this worker",
+    ["worker_id"],
+)
+worker_batch_queue_size_gauge = Gauge(
+    "worker_batch_queue_size",
+    "Current dynamic batch queue size for this worker",
+    ["worker_id"],
+)
 
 
 async def heartbeat_loop():
@@ -182,3 +199,11 @@ async def metrics():
             "device": model_loader.device,
         }
     }
+
+@app.get("/metrics/prometheus")
+async def prometheus_metrics():
+    stats = batcher.get_stats() if batcher else {}
+    worker_requests_processed_gauge.labels(worker_id=config.worker_id).set(requests_processed)
+    worker_batch_size_gauge.labels(worker_id=config.worker_id).set(stats.get("avg_batch_size", 0))
+    worker_batch_queue_size_gauge.labels(worker_id=config.worker_id).set(stats.get("queue_size", 0))
+    return generate_latest()
