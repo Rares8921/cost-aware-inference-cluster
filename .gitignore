@@ -49,6 +49,9 @@ htmlcov/
 # Logs
 *.log
 
+# Local context notes
+PROJECT_CONTEXT_cost_aware.md
+
 # Docker
 .dockerignore
 

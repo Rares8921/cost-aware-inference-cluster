@@ -87,8 +87,7 @@ Useful endpoints:
 - Scheduler health: `http://localhost:8001/health`
 - Scheduler JSON metrics: `http://localhost:8001/metrics`
 - Scheduler Prometheus metrics: `http://localhost:8001/metrics/prometheus`
-- Worker JSON metrics: `http://localhost:8002/metrics`
-- Worker Prometheus metrics: `http://localhost:8002/metrics/prometheus`
+- Worker health/metrics: available inside the Compose network at `http://worker:8002`; host access requires publishing port 8002.
 
 ## Tests
 
@@ -103,7 +102,8 @@ python -m pytest -p no:cacheprovider \
   tests/unit/test_priority_queue.py \
   tests/unit/test_worker_registry.py \
   tests/integration/test_scheduler_queue.py \
-  tests/benchmark/test_autoscaling_simulation.py
+  tests/benchmark/test_autoscaling_simulation.py \
+  tests/benchmark/test_local_stack_benchmark.py
 ```
 
 The focused unit and service-logic tests use an in-memory Redis double. Live Docker Compose and live benchmark scripts still require the service stack.
