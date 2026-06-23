@@ -1,0 +1,869 @@
+{
+  "aggregate_summary": {
+    "cooldown_blocks": 2,
+    "cost_budget_blocks": 2,
+    "estimated_gpu_cost_usd": 5.041666,
+    "max_worker_blocks": 2,
+    "projected_cost_avoided_usd": 0.208333,
+    "scale_down_decisions": 3,
+    "scale_up_decisions": 7,
+    "total_scenarios": 9,
+    "total_steps": 27,
+    "warm_pool_floor_blocks": 8
+  },
+  "config": {
+    "cost_per_gpu_hour": 2.5,
+    "max_cost_per_hour": 20.0,
+    "max_p99_latency_ms": 100.0,
+    "max_workers": 10,
+    "min_workers": 2,
+    "scale_cooldown_seconds": 60,
+    "scale_down_threshold": 0.3,
+    "scale_up_threshold": 0.8,
+    "target_p95_latency_ms": 50.0,
+    "target_queue_depth": 50,
+    "warm_pool_size": 2
+  },
+  "limitations": [
+    "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+    "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+    "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+    "Projected avoided cost is simulated and must not be described as real cloud savings.",
+    "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+  ],
+  "metadata": {
+    "command_used": "python benchmarks/autoscaling_simulation.py --timestamp 2026-06-23T00:00:00Z",
+    "git_commit": "da16b47",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python_version": "3.13.12",
+    "timestamp": "2026-06-23T00:00:00Z"
+  },
+  "scenarios": [
+    {
+      "active_workers_over_time": [
+        4,
+        4,
+        4
+      ],
+      "cooldown_blocks": 0,
+      "cost_budget_blocks": 0,
+      "description": "Low queue depth remains within the warm-pool floor.",
+      "details": [
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 20,
+          "p99_latency_ms": 35,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 5,
+          "step": 0
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 25,
+          "p99_latency_ms": 40,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 8,
+          "step": 1
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 140,
+          "p95_latency_ms": 22,
+          "p99_latency_ms": 38,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 6,
+          "step": 2
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.5,
+      "initial_workers": 4,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "low_steady_traffic",
+      "p95_latency_ms_over_time": [
+        20,
+        25,
+        22
+      ],
+      "p99_latency_ms_over_time": [
+        35,
+        40,
+        38
+      ],
+      "projected_cost_avoided_usd": 0.0,
+      "queue_depth_over_time": [
+        5,
+        8,
+        6
+      ],
+      "scale_down_decisions": 0,
+      "scale_up_decisions": 0,
+      "steps_simulated": 3,
+      "warm_pool_floor_blocks": 3
+    },
+    {
+      "active_workers_over_time": [
+        4,
+        4,
+        5,
+        5
+      ],
+      "cooldown_blocks": 1,
+      "cost_budget_blocks": 0,
+      "description": "A burst raises queue pressure and then settles after cooldown.",
+      "details": [
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 25,
+          "p99_latency_ms": 40,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 10,
+          "step": 0
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_up",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 45,
+          "p99_latency_ms": 80,
+          "projected_hourly_cost_if_scaled_up": 12.5,
+          "queue_depth": 150,
+          "step": 1
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 5,
+          "blocked_by_cooldown": true,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 100,
+          "p95_latency_ms": 48,
+          "p99_latency_ms": 85,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 160,
+          "step": 2
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 5,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 170,
+          "p95_latency_ms": 35,
+          "p99_latency_ms": 70,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 30,
+          "step": 3
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.75,
+      "initial_workers": 4,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "burst_traffic",
+      "p95_latency_ms_over_time": [
+        25,
+        45,
+        48,
+        35
+      ],
+      "p99_latency_ms_over_time": [
+        40,
+        80,
+        85,
+        70
+      ],
+      "projected_cost_avoided_usd": 0.0,
+      "queue_depth_over_time": [
+        10,
+        150,
+        160,
+        30
+      ],
+      "scale_down_decisions": 0,
+      "scale_up_decisions": 1,
+      "steps_simulated": 4,
+      "warm_pool_floor_blocks": 1
+    },
+    {
+      "active_workers_over_time": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "cooldown_blocks": 0,
+      "cost_budget_blocks": 0,
+      "description": "Persistent queue pressure repeatedly recommends scale-up until pressure is relieved.",
+      "details": [
+        {
+          "active_workers_after": 3,
+          "active_workers_before": 2,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_up",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 45,
+          "p99_latency_ms": 85,
+          "projected_hourly_cost_if_scaled_up": 7.5,
+          "queue_depth": 140,
+          "step": 0
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 3,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_up",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 48,
+          "p99_latency_ms": 90,
+          "projected_hourly_cost_if_scaled_up": 10.0,
+          "queue_depth": 145,
+          "step": 1
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_up",
+          "duration_s": 60,
+          "elapsed_s": 140,
+          "p95_latency_ms": 45,
+          "p99_latency_ms": 85,
+          "projected_hourly_cost_if_scaled_up": 12.5,
+          "queue_depth": 130,
+          "step": 2
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 5,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 210,
+          "p95_latency_ms": 30,
+          "p99_latency_ms": 60,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 20,
+          "step": 3
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.583333,
+      "initial_workers": 2,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "sustained_high_queue_depth",
+      "p95_latency_ms_over_time": [
+        45,
+        48,
+        45,
+        30
+      ],
+      "p99_latency_ms_over_time": [
+        85,
+        90,
+        85,
+        60
+      ],
+      "projected_cost_avoided_usd": 0.0,
+      "queue_depth_over_time": [
+        140,
+        145,
+        130,
+        20
+      ],
+      "scale_down_decisions": 0,
+      "scale_up_decisions": 3,
+      "steps_simulated": 4,
+      "warm_pool_floor_blocks": 0
+    },
+    {
+      "active_workers_over_time": [
+        3,
+        4,
+        5
+      ],
+      "cooldown_blocks": 0,
+      "cost_budget_blocks": 0,
+      "description": "Latency breaches trigger scale-up even with moderate queue depth.",
+      "details": [
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 3,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_up",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 120,
+          "p99_latency_ms": 160,
+          "projected_hourly_cost_if_scaled_up": 10.0,
+          "queue_depth": 20,
+          "step": 0
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_up",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 115,
+          "p99_latency_ms": 150,
+          "projected_hourly_cost_if_scaled_up": 12.5,
+          "queue_depth": 25,
+          "step": 1
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 5,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 140,
+          "p95_latency_ms": 35,
+          "p99_latency_ms": 80,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 15,
+          "step": 2
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.5,
+      "initial_workers": 3,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "latency_threshold_pressure",
+      "p95_latency_ms_over_time": [
+        120,
+        115,
+        35
+      ],
+      "p99_latency_ms_over_time": [
+        160,
+        150,
+        80
+      ],
+      "projected_cost_avoided_usd": 0.0,
+      "queue_depth_over_time": [
+        20,
+        25,
+        15
+      ],
+      "scale_down_decisions": 0,
+      "scale_up_decisions": 2,
+      "steps_simulated": 3,
+      "warm_pool_floor_blocks": 0
+    },
+    {
+      "active_workers_over_time": [
+        4,
+        5,
+        5
+      ],
+      "cooldown_blocks": 1,
+      "cost_budget_blocks": 0,
+      "description": "Cooldown suppresses immediate opposite or repeated actions after a scale event.",
+      "details": [
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_up",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 45,
+          "p99_latency_ms": 80,
+          "projected_hourly_cost_if_scaled_up": 12.5,
+          "queue_depth": 150,
+          "step": 0
+        },
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 5,
+          "blocked_by_cooldown": true,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 30,
+          "p95_latency_ms": 20,
+          "p99_latency_ms": 30,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 3,
+          "step": 1
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 5,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_down",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 20,
+          "p99_latency_ms": 30,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 3,
+          "step": 2
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.583333,
+      "initial_workers": 4,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "cooldown_prevents_thrashing",
+      "p95_latency_ms_over_time": [
+        45,
+        20,
+        20
+      ],
+      "p99_latency_ms_over_time": [
+        80,
+        30,
+        30
+      ],
+      "projected_cost_avoided_usd": 0.041667,
+      "queue_depth_over_time": [
+        150,
+        3,
+        3
+      ],
+      "scale_down_decisions": 1,
+      "scale_up_decisions": 1,
+      "steps_simulated": 3,
+      "warm_pool_floor_blocks": 0
+    },
+    {
+      "active_workers_over_time": [
+        4,
+        4,
+        4
+      ],
+      "cooldown_blocks": 0,
+      "cost_budget_blocks": 0,
+      "description": "Low traffic does not scale below min_workers plus warm_pool_size.",
+      "details": [
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 15,
+          "p99_latency_ms": 25,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 2,
+          "step": 0
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 15,
+          "p99_latency_ms": 25,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 1,
+          "step": 1
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 140,
+          "p95_latency_ms": 15,
+          "p99_latency_ms": 25,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 2,
+          "step": 2
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.5,
+      "initial_workers": 4,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "warm_pool_floor",
+      "p95_latency_ms_over_time": [
+        15,
+        15,
+        15
+      ],
+      "p99_latency_ms_over_time": [
+        25,
+        25,
+        25
+      ],
+      "projected_cost_avoided_usd": 0.0,
+      "queue_depth_over_time": [
+        2,
+        1,
+        2
+      ],
+      "scale_down_decisions": 0,
+      "scale_up_decisions": 0,
+      "steps_simulated": 3,
+      "warm_pool_floor_blocks": 3
+    },
+    {
+      "active_workers_over_time": [
+        10,
+        10
+      ],
+      "cooldown_blocks": 0,
+      "cost_budget_blocks": 0,
+      "description": "Queue pressure cannot increase workers beyond max_workers.",
+      "details": [
+        {
+          "active_workers_after": 10,
+          "active_workers_before": 10,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": true,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 80,
+          "p99_latency_ms": 140,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 250,
+          "step": 0
+        },
+        {
+          "active_workers_after": 10,
+          "active_workers_before": 10,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": true,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 75,
+          "p99_latency_ms": 130,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 230,
+          "step": 1
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.833333,
+      "initial_workers": 10,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 2,
+      "name": "max_worker_limit",
+      "p95_latency_ms_over_time": [
+        80,
+        75
+      ],
+      "p99_latency_ms_over_time": [
+        140,
+        130
+      ],
+      "projected_cost_avoided_usd": 0.0,
+      "queue_depth_over_time": [
+        250,
+        230
+      ],
+      "scale_down_decisions": 0,
+      "scale_up_decisions": 0,
+      "steps_simulated": 2,
+      "warm_pool_floor_blocks": 0
+    },
+    {
+      "active_workers_over_time": [
+        2,
+        2
+      ],
+      "cooldown_blocks": 0,
+      "cost_budget_blocks": 2,
+      "description": "Projected hourly cost blocks scale-up under high queue pressure.",
+      "details": [
+        {
+          "active_workers_after": 2,
+          "active_workers_before": 2,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": true,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 45,
+          "p99_latency_ms": 80,
+          "projected_hourly_cost_if_scaled_up": 7.5,
+          "queue_depth": 150,
+          "step": 0
+        },
+        {
+          "active_workers_after": 2,
+          "active_workers_before": 2,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": true,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 45,
+          "p99_latency_ms": 80,
+          "projected_hourly_cost_if_scaled_up": 7.5,
+          "queue_depth": 160,
+          "step": 1
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.166667,
+      "initial_workers": 2,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "cost_budget_limit",
+      "p95_latency_ms_over_time": [
+        45,
+        45
+      ],
+      "p99_latency_ms_over_time": [
+        80,
+        80
+      ],
+      "projected_cost_avoided_usd": 0.083333,
+      "queue_depth_over_time": [
+        150,
+        160
+      ],
+      "scale_down_decisions": 0,
+      "scale_up_decisions": 0,
+      "steps_simulated": 2,
+      "warm_pool_floor_blocks": 0
+    },
+    {
+      "active_workers_over_time": [
+        6,
+        5,
+        4
+      ],
+      "cooldown_blocks": 0,
+      "cost_budget_blocks": 0,
+      "description": "Idle queue depth recommends scale-down until the warm-pool floor is reached.",
+      "details": [
+        {
+          "active_workers_after": 5,
+          "active_workers_before": 6,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_down",
+          "duration_s": 60,
+          "elapsed_s": 0,
+          "p95_latency_ms": 15,
+          "p99_latency_ms": 25,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 2,
+          "step": 0
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 5,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": false,
+          "decision": "scale_down",
+          "duration_s": 60,
+          "elapsed_s": 70,
+          "p95_latency_ms": 15,
+          "p99_latency_ms": 25,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 2,
+          "step": 1
+        },
+        {
+          "active_workers_after": 4,
+          "active_workers_before": 4,
+          "blocked_by_cooldown": false,
+          "blocked_by_cost_budget": false,
+          "blocked_by_max_workers": false,
+          "blocked_by_warm_pool_floor": true,
+          "decision": "no_change",
+          "duration_s": 60,
+          "elapsed_s": 140,
+          "p95_latency_ms": 15,
+          "p99_latency_ms": 25,
+          "projected_hourly_cost_if_scaled_up": null,
+          "queue_depth": 2,
+          "step": 2
+        }
+      ],
+      "estimated_gpu_cost_usd": 0.625,
+      "initial_workers": 6,
+      "limitations": [
+        "This benchmark is a deterministic simulation of autoscaling decisions, not a live load test.",
+        "No GPU, Kubernetes cluster, Docker Compose stack, or model inference service is required or measured.",
+        "Estimated GPU cost is computed from configured worker count and cost-per-GPU-hour values.",
+        "Projected avoided cost is simulated and must not be described as real cloud savings.",
+        "The scheduler scale-up implementation currently records a target in logs; it does not create pods or workers."
+      ],
+      "max_worker_blocks": 0,
+      "name": "scale_down_after_idle",
+      "p95_latency_ms_over_time": [
+        15,
+        15,
+        15
+      ],
+      "p99_latency_ms_over_time": [
+        25,
+        25,
+        25
+      ],
+      "projected_cost_avoided_usd": 0.083333,
+      "queue_depth_over_time": [
+        2,
+        2,
+        2
+      ],
+      "scale_down_decisions": 2,
+      "scale_up_decisions": 0,
+      "steps_simulated": 3,
+      "warm_pool_floor_blocks": 1
+    }
+  ],
+  "unsupported_claims": [
+    "production usage",
+    "real GPU cost savings",
+    "verified Kubernetes production autoscaling",
+    "verified QPS, p95, or p99 performance on live GPUs",
+    "production reliability or SLA guarantees"
+  ]
+}
