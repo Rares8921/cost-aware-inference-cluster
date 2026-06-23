@@ -140,6 +140,40 @@ Current checked-in simulation summary:
 
 Treat those values as simulated/projected decision evidence only.
 
+## Local Stack Benchmark
+
+Run a small local service smoke/load benchmark against a running stack:
+
+```bash
+python benchmarks/local_stack_benchmark.py --requests 30 --concurrency 3 --settle-seconds 2
+```
+
+The benchmark checks router and scheduler health, optionally checks worker health/metrics if the worker port is reachable from the host, sends requests through router `/infer`, and records scheduler metrics before and after the run. The measured request latency is router enqueue-response latency, not completed model inference latency.
+
+Current checked-in local stack result:
+
+| Metric | Value |
+|---|---:|
+| Benchmark status | completed |
+| Requests attempted | 30 |
+| Successful requests | 30 |
+| Failed requests | 0 |
+| Status counts | `{'200': 30}` |
+| Throughput | 3.4303 requests/second |
+| Router enqueue-response p50 | 663.7707 ms |
+| Router enqueue-response p95 | 2389.2557 ms |
+| Router enqueue-response p99 | 2390.5513 ms |
+| Scheduler queue depth after run | 0 |
+| Scheduler completed count after run | 30 |
+| Scheduler active workers after run | 2 |
+
+Report files:
+
+- `benchmarks/results/local_stack_benchmark_latest.json`
+- `benchmarks/results/local_stack_benchmark_latest.md`
+
+Known limitation from this run: worker containers were healthy inside Docker Compose and visible through scheduler heartbeats, but `http://localhost:8002` was not reachable from the host because the worker service does not publish port 8002. Worker host metrics are therefore marked unavailable in the report.
+
 ## Other Benchmark Scripts
 
 The repository also contains live-service harnesses:
