@@ -1,22 +1,25 @@
 import pytest
-from services.router.tenant_manager import TenantManager, TenantConfig
+
+from services.router import tenant_manager as tenant_manager_module
+from services.router.tenant_manager import TenantManager
+from tests.fakes import InMemoryRedis
 
 
 @pytest.fixture
-async def tenant_manager():
+def tenant_manager():
     tm = TenantManager(
-        redis_url="redis://localhost:6379",
+        redis_url="redis://unit-test",
         default_quota_per_second=10,
         default_quota_per_minute=500,
         default_quota_per_hour=5000,
     )
-    await tm.connect()
-    yield tm
-    await tm.disconnect()
+    tm.redis = InMemoryRedis()
+    return tm
 
 
 @pytest.mark.anyio
-async def test_rate_limit_per_second(tenant_manager):
+async def test_rate_limit_per_second(tenant_manager, monkeypatch):
+    monkeypatch.setattr(tenant_manager_module.time, "time", lambda: 1000.0)
     tenant_id = "test_tenant_1"
 
     for _ in range(10):
@@ -39,7 +42,8 @@ async def test_tenant_config(tenant_manager):
 
 
 @pytest.mark.anyio
-async def test_tenant_metrics(tenant_manager):
+async def test_tenant_metrics(tenant_manager, monkeypatch):
+    monkeypatch.setattr(tenant_manager_module.time, "time", lambda: 1000.0)
     tenant_id = "metrics_tenant"
 
     await tenant_manager.check_rate_limit(tenant_id, 5)
@@ -52,7 +56,8 @@ async def test_tenant_metrics(tenant_manager):
 
 
 @pytest.mark.anyio
-async def test_noisy_neighbor_detection(tenant_manager):
+async def test_noisy_neighbor_detection(tenant_manager, monkeypatch):
+    monkeypatch.setattr(tenant_manager_module.time, "time", lambda: 1000.0)
     tenant_id = "noisy_tenant"
 
     await tenant_manager.record_request(tenant_id)

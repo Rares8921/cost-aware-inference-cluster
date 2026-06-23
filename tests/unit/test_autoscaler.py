@@ -1,15 +1,17 @@
 import pytest
+
 from services.scheduler.autoscaler import Autoscaler, AutoscalingDecision
-from services.scheduler.queue_manager import QueueManager
-from services.scheduler.worker_registry import WorkerRegistry, WorkerInfo
-from services.scheduler.cost_optimizer import CostOptimizer
 from services.scheduler.config import SchedulerConfig
+from services.scheduler.cost_optimizer import CostOptimizer
+from services.scheduler.queue_manager import QueueItem, QueueManager
+from services.scheduler.worker_registry import WorkerInfo, WorkerRegistry
+from tests.fakes import InMemoryRedis
 
 
 @pytest.fixture
 def config():
     return SchedulerConfig(
-        redis_url="redis://localhost:6379",
+        redis_url="redis://unit-test",
         min_workers=2,
         max_workers=10,
         target_queue_depth=50,
@@ -20,19 +22,17 @@ def config():
 
 
 @pytest.fixture
-async def queue_manager(config):
+def queue_manager(config):
     qm = QueueManager(config.redis_url)
-    await qm.connect()
-    yield qm
-    await qm.disconnect()
+    qm.redis = InMemoryRedis()
+    return qm
 
 
 @pytest.fixture
-async def worker_registry(config):
+def worker_registry(config):
     wr = WorkerRegistry(config.redis_url)
-    await wr.connect()
-    yield wr
-    await wr.disconnect()
+    wr.redis = InMemoryRedis()
+    return wr
 
 
 @pytest.fixture
@@ -60,13 +60,12 @@ async def test_scale_up_on_high_queue_depth(autoscaler, queue_manager, worker_re
         await worker_registry.register_worker(worker)
 
     for i in range(150):
-        from services.scheduler.queue_manager import QueueItem
         item = QueueItem(
             id=f"item-{i}",
             tenant_id="test",
             payload={"text": "test"},
             priority=0,
-            timestamp=0,
+            timestamp=float(i),
             timeout_ms=5000,
         )
         await queue_manager.enqueue(item)
@@ -76,7 +75,7 @@ async def test_scale_up_on_high_queue_depth(autoscaler, queue_manager, worker_re
 
 
 @pytest.mark.anyio
-async def test_scale_down_on_low_queue_depth(autoscaler, queue_manager, worker_registry):
+async def test_scale_down_on_low_queue_depth(autoscaler, worker_registry):
     for i in range(5):
         worker = WorkerInfo(
             id=f"worker-{i}",
@@ -94,7 +93,7 @@ async def test_scale_down_on_low_queue_depth(autoscaler, queue_manager, worker_r
 
 
 @pytest.mark.anyio
-async def test_no_scale_on_cost_limit(autoscaler, cost_optimizer):
+async def test_no_scale_on_cost_limit(cost_optimizer):
     for i in range(8):
         cost_optimizer.track_worker_started(f"worker-{i}")
 
