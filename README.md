@@ -1,97 +1,98 @@
 # Cost-Aware Autoscaling GPU Inference Cluster
 
-A FastAPI-based inference serving prototype with separate router, scheduler, and worker services. The project demonstrates Redis-backed queueing, worker heartbeats, tenant-aware rate limiting, dynamic batching, cost-aware autoscaling decision logic, and monitoring/deployment configuration.
+This repository is a FastAPI-based inference serving prototype. It models a router, scheduler, and worker cluster where requests are rate-limited by tenant, queued in Redis, pulled by workers, batched, processed, and reported back to the scheduler. The project is best read as a tested prototype with deterministic simulation evidence and one local Docker Compose smoke/load benchmark, not as production performance evidence.
 
-This is a tested prototype and simulation-backed case study. It is not evidence of production usage, real GPU cost savings, live Kubernetes autoscaling, or verified production QPS/latency.
-
-## Architecture
-
-```text
-client
-  -> router /infer
-     -> TenantManager Redis counters
-     -> scheduler /infer
-        -> QueueManager Redis sorted set
-        -> worker /worker/dequeue
-           -> DynamicBatcher
-           -> ModelLoader PyTorch/Hugging Face inference
-        <- worker /worker/complete/{item_id}
-```
-
-Main components:
-
-- `services/router/main.py`: accepts tenant-scoped inference requests and forwards accepted work to the scheduler.
-- `services/router/tenant_manager.py`: checks per-second, per-minute, and per-hour Redis-backed tenant quotas.
-- `services/scheduler/main.py`: exposes enqueue, heartbeat, dequeue, completion, JSON metrics, and Prometheus metrics endpoints.
-- `services/scheduler/queue_manager.py`: stores queued requests in a Redis sorted set and tracks processing/completion metrics.
-- `services/scheduler/worker_registry.py`: records worker metadata and heartbeats and cleans stale workers.
-- `services/scheduler/autoscaler.py`: makes scale-up, scale-down, or no-change decisions from queue depth, latency, warm-pool, cooldown, worker-limit, and cost-budget inputs.
-- `services/scheduler/cost_optimizer.py`: estimates current/projected hourly GPU cost from worker count and configured cost per GPU hour.
-- `services/worker/main.py`: sends heartbeats, dequeues work, batches requests, processes them, and reports completion.
-- `services/worker/batch_processor.py`: implements max-size and timeout-triggered dynamic batching.
-- `services/worker/model_loader.py`: loads a Hugging Face sequence-classification model and runs PyTorch inference.
+It is useful for reviewing service boundaries, queueing behavior, worker heartbeats, dynamic batching, and cost-aware autoscaling decision logic in a small system.
 
 ## What This Demonstrates
 
-Supported by code and tests:
+Supported by code, tests, or checked-in reports:
 
-- Multi-service router/scheduler/worker prototype.
-- Redis-backed queueing and worker heartbeat registry.
-- Tenant-aware rate limiting.
-- Priority-aware queue ordering.
+- FastAPI router, scheduler, and worker services.
+- Redis-backed request queueing and worker heartbeat tracking.
+- Tenant-aware rate limiting at the router.
+- Priority-aware scheduler queue ordering.
 - Worker-side dynamic batching and batch statistics.
-- Cost-aware autoscaling decision logic.
-- Deterministic autoscaling simulation with explicit limitations.
-- Prometheus/Grafana-oriented monitoring configuration for emitted router, scheduler, and worker metrics.
+- Cost-aware autoscaling decision logic based on queue depth, latency inputs, warm-pool settings, cooldowns, worker limits, and projected cost budget.
+- Deterministic unit/integration tests using an in-memory Redis double.
+- Deterministic autoscaling simulation reports.
+- A local Docker Compose smoke/load benchmark for the router -> scheduler -> worker path.
+- Docker Compose, Kubernetes, Prometheus, and Grafana configuration evidence.
 
-## What This Does Not Prove
+## Architecture Overview
 
-Do not use this repository to claim:
-
-- Production deployment or production traffic.
-- Real GPU cost savings.
-- Real Kubernetes-driven custom autoscaling.
-- Verified live-GPU QPS, p95, or p99 latency.
-- SLA, uptime, or production reliability.
-- GPU utilization improvements. No GPU utilization metric is emitted.
-- Model quality, accuracy, F1, precision, or recall.
-
-## Local Quickstart
-
-Install dependencies:
-
-```bash
-pip install -r requirements-dev.txt
+```mermaid
+flowchart LR
+    Client[Client] --> Router[Router service]
+    Router --> Tenant[TenantManager]
+    Tenant --> Redis[(Redis)]
+    Router --> Scheduler[Scheduler service]
+    Scheduler --> Queue[QueueManager]
+    Scheduler --> Registry[WorkerRegistry]
+    Queue --> Redis
+    Registry --> Redis
+    Scheduler --> Autoscaler[Autoscaler decision loop]
+    Autoscaler --> Cost[CostOptimizer]
+    Worker[Worker service] --> Scheduler
+    Worker --> Batcher[DynamicBatcher]
+    Worker --> Model[ModelLoader]
 ```
 
-Start the local stack with Docker Compose:
+The router handles the public `/infer` entry point. It checks tenant limits and forwards accepted requests to the scheduler. The scheduler assigns request IDs, stores queue items, records worker heartbeats, exposes queue metrics, and runs the autoscaling decision loop. Workers send heartbeats, poll for queued items, batch them, run model inference through the model loader, and mark each item complete or failed.
 
-```bash
-docker-compose up --build
+The autoscaler currently makes and logs decisions. It does not create Kubernetes pods or Docker containers.
+
+## Request Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant R as Router
+    participant T as TenantManager
+    participant S as Scheduler
+    participant Q as QueueManager
+    participant W as Worker
+
+    C->>R: POST /infer
+    R->>T: check tenant quota
+    T-->>R: allowed or rate-limited
+    R->>S: POST /infer
+    S->>Q: enqueue request
+    S-->>R: request_id, status=queued
+    R-->>C: queued response
+    W->>S: heartbeat
+    W->>S: GET /worker/dequeue
+    S->>Q: pop queued items
+    S-->>W: batch items
+    W->>W: dynamic batch + model processing
+    W->>S: POST /worker/complete/{item_id}
 ```
 
-Send a sample request:
+Important behavior: the router response confirms enqueueing, not completed inference output. The checked-in local benchmark measures router enqueue-response latency.
 
-```bash
-curl -X POST http://localhost:8000/infer \
-  -H "Content-Type: application/json" \
-  -H "X-Tenant-Id: demo" \
-  -d '{"text":"hello from the inference cluster","priority":1}'
-```
+## Repository Map
 
-Useful endpoints:
+- `services/router/`: router API, tenant rate limiting, router metrics.
+- `services/scheduler/`: queue manager, worker registry, autoscaling decision logic, cost accounting, scheduler API, scheduler metrics.
+- `services/worker/`: worker loop, dynamic batching, model loading, worker metrics.
+- `tests/unit/`: deterministic unit tests for batching, tenants, queues, registry, cost optimizer, and autoscaler behavior.
+- `tests/integration/`: service-logic queue flow tests using an in-memory Redis double.
+- `tests/benchmark/`: tests for simulation and benchmark report generation logic.
+- `benchmarks/`: benchmark and simulation scripts.
+- `benchmarks/results/`: checked-in latest simulation and local stack benchmark reports.
+- `kubernetes/`: Kubernetes manifests as configuration evidence.
+- `monitoring/`: Prometheus scrape/alert config and Grafana dashboard JSON.
+- `version_analysis/`: older generated benchmark artifacts and plots with limited environment metadata.
+- `docs/`: architecture, case-study, and repository guide documentation.
+- `PROJECT_EVIDENCE.md`: claim-by-claim evidence ledger for CV-safe wording.
 
-- Router health: `http://localhost:8000/health`
-- Router JSON metrics: `http://localhost:8000/metrics`
-- Router Prometheus metrics: `http://localhost:8000/metrics/prometheus`
-- Scheduler health: `http://localhost:8001/health`
-- Scheduler JSON metrics: `http://localhost:8001/metrics`
-- Scheduler Prometheus metrics: `http://localhost:8001/metrics/prometheus`
-- Worker health/metrics: available inside the Compose network at `http://worker:8002`; host access requires publishing port 8002.
+For a file-by-file reading path, see [`docs/repository-guide.md`](docs/repository-guide.md).
 
-## Tests
+## Evidence And Evaluation
 
-Deterministic tests that do not require Docker, Redis, Kubernetes, or GPU:
+### Deterministic Tests
+
+Run the focused tests that do not require Docker, Redis, Kubernetes, or GPU:
 
 ```bash
 python -m pytest -p no:cacheprovider \
@@ -106,24 +107,22 @@ python -m pytest -p no:cacheprovider \
   tests/benchmark/test_local_stack_benchmark.py
 ```
 
-The focused unit and service-logic tests use an in-memory Redis double. Live Docker Compose and live benchmark scripts still require the service stack.
+These tests use an in-memory Redis double where needed. They are evidence for deterministic service logic, not for production reliability.
 
-## Autoscaling Simulation Benchmark
+### Autoscaling Simulation
 
-Run the deterministic autoscaling simulation:
+Run:
 
 ```bash
 python benchmarks/autoscaling_simulation.py
 ```
 
-Generated reports:
+Checked-in reports:
 
-- `benchmarks/results/autoscaling_simulation_latest.json`
-- `benchmarks/results/autoscaling_simulation_latest.md`
+- [`benchmarks/results/autoscaling_simulation_latest.json`](benchmarks/results/autoscaling_simulation_latest.json)
+- [`benchmarks/results/autoscaling_simulation_latest.md`](benchmarks/results/autoscaling_simulation_latest.md)
 
-The simulation feeds controlled queue-depth, p95/p99 latency, active-worker, warm-pool, cooldown, worker-limit, and cost-budget scenarios into the autoscaler decision logic. It does not run model inference, Docker, Kubernetes, or GPUs.
-
-Current checked-in simulation summary:
+Current checked-in aggregate summary:
 
 | Metric | Value |
 |---|---:|
@@ -138,19 +137,22 @@ Current checked-in simulation summary:
 | Simulated estimated GPU cost | $5.041666 |
 | Simulated projected avoided cost | $0.208333 |
 
-Treat those values as simulated/projected decision evidence only.
+These numbers are simulated and projected. They are not real GPU usage or cloud billing results.
 
-## Local Stack Benchmark
+### Local Stack Smoke/Load Benchmark
 
-Run a small local service smoke/load benchmark against a running stack:
+With Docker Compose already running, run:
 
 ```bash
 python benchmarks/local_stack_benchmark.py --requests 30 --concurrency 3 --settle-seconds 2
 ```
 
-The benchmark checks router and scheduler health, optionally checks worker health/metrics if the worker port is reachable from the host, sends requests through router `/infer`, and records scheduler metrics before and after the run. The measured request latency is router enqueue-response latency, not completed model inference latency.
+Checked-in reports:
 
-Current checked-in local stack result:
+- [`benchmarks/results/local_stack_benchmark_latest.json`](benchmarks/results/local_stack_benchmark_latest.json)
+- [`benchmarks/results/local_stack_benchmark_latest.md`](benchmarks/results/local_stack_benchmark_latest.md)
+
+Current checked-in local result:
 
 | Metric | Value |
 |---|---:|
@@ -167,46 +169,68 @@ Current checked-in local stack result:
 | Scheduler completed count after run | 30 |
 | Scheduler active workers after run | 2 |
 
-Report files:
+This is local smoke/load evidence only. It measures router `/infer` enqueue-response latency, not completed inference latency. Worker host metrics were unavailable in the checked-in run because Docker Compose did not publish worker port 8002 to the host.
 
-- `benchmarks/results/local_stack_benchmark_latest.json`
-- `benchmarks/results/local_stack_benchmark_latest.md`
+## How To Run Locally
 
-Known limitation from this run: worker containers were healthy inside Docker Compose and visible through scheduler heartbeats, but `http://localhost:8002` was not reachable from the host because the worker service does not publish port 8002. Worker host metrics are therefore marked unavailable in the report.
+Install development dependencies:
 
-## Other Benchmark Scripts
+```bash
+pip install -r requirements-dev.txt
+```
 
-The repository also contains live-service harnesses:
+Start the local stack:
 
-- `benchmarks/cost_comparison.py`
-- `benchmarks/latency_analysis.py`
-- `benchmarks/gpu_utilization.py`
-- `tests/load_test.py`
-- `tests/spike_test.py`
+```bash
+docker-compose up --build
+```
 
-Existing historical outputs under `version_analysis/` are useful artifacts, but they do not include enough environment metadata to support live performance or cost-savings claims.
+Send a sample request:
 
-## Monitoring Notes
+```bash
+curl -X POST http://localhost:8000/infer \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-Id: demo" \
+  -d '{"text":"hello from the inference cluster","priority":1}'
+```
 
-Prometheus config is in `monitoring/prometheus/prometheus.yml`; alerts are in `monitoring/prometheus/alerts.yml`; Grafana dashboard JSON is in `monitoring/grafana/inference-dashboard.json`.
+Useful endpoints when the stack is running:
 
-Current emitted Prometheus metrics include:
+- Router health: `http://localhost:8000/health`
+- Router JSON metrics: `http://localhost:8000/metrics`
+- Router Prometheus metrics: `http://localhost:8000/metrics/prometheus`
+- Scheduler health: `http://localhost:8001/health`
+- Scheduler JSON metrics: `http://localhost:8001/metrics`
+- Scheduler Prometheus metrics: `http://localhost:8001/metrics/prometheus`
+- Worker health/metrics: available inside the Compose network at `http://worker:8002`; host access requires publishing port 8002.
 
-- `router_requests_total`
-- `router_request_duration_seconds`
-- `scheduler_requests_total`
-- `scheduler_queue_depth`
-- `scheduler_active_workers`
-- `scheduler_cost_current_hour`
-- `scheduler_latency_p50_ms`
-- `scheduler_latency_p95_ms`
-- `scheduler_latency_p99_ms`
-- `worker_requests_processed`
-- `worker_batch_size`
-- `worker_batch_queue_size`
+## Limitations And Unsupported Claims
 
-GPU utilization is not emitted and the alert for it was removed rather than faked.
+Do not use this repository to claim:
 
-## Evidence Ledger
+- Production deployment, production traffic, or real users.
+- Real GPU cost savings.
+- Live Kubernetes autoscaling validation.
+- Verified live-GPU QPS, p95, or p99 latency.
+- SLA, uptime, or production reliability.
+- GPU utilization improvement. No GPU utilization metric is emitted.
+- Model quality, accuracy, F1, precision, or recall.
+- Exactly-once queueing or production-grade fault tolerance.
 
-See `PROJECT_EVIDENCE.md` for the CV-safe claim map: code files, tests, benchmark/report evidence, and limitations.
+## Future Work
+
+These are next steps, not current functionality:
+
+- Add a live Redis-backed integration test that runs outside the in-memory Redis double.
+- Publish or proxy worker metrics in the local stack so worker batch stats are easier to collect from the host.
+- Add a small completed-inference endpoint or callback flow if the project should measure end-to-end inference latency.
+- Validate Kubernetes behavior in a real cluster before claiming Kubernetes autoscaling.
+- Add a documented GPU benchmark only if the environment, device metrics, and model setup are recorded.
+- Add dashboard screenshots or a Prometheus scrape check if monitoring evidence needs to be reviewer-friendly.
+
+## Deeper Docs
+
+- [`docs/architecture.md`](docs/architecture.md): components, data flow, storage, metrics, and deployment shape.
+- [`docs/repository-guide.md`](docs/repository-guide.md): where to read the code and what each important file does.
+- [`docs/case-study.md`](docs/case-study.md): project story, design choices, evidence, limitations, and future work.
+- [`PROJECT_EVIDENCE.md`](PROJECT_EVIDENCE.md): claim-by-claim evidence ledger for safe CV wording.

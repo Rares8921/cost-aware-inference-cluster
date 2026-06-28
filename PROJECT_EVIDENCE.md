@@ -2,6 +2,13 @@
 
 This ledger maps safe project claims to repository evidence. It intentionally avoids production, real-GPU cost-savings, live Kubernetes autoscaling, and live performance claims that are not proven by this repository.
 
+Related reviewer docs:
+
+- `README.md`: main project overview and quickstart.
+- `docs/architecture.md`: architecture and data-flow diagrams.
+- `docs/repository-guide.md`: file-by-file reading guide.
+- `docs/case-study.md`: project narrative, evidence, limitations, and future work.
+
 ## Claim Audit
 
 | Safe claim | Code evidence | Test evidence | Benchmark/report evidence | Limitations |
@@ -15,7 +22,7 @@ This ledger maps safe project claims to repository evidence. It intentionally av
 | Designed cost-aware autoscaling decision logic. | `services/scheduler/autoscaler.py`, `services/scheduler/cost_optimizer.py`, `services/scheduler/config.py` | `tests/unit/test_autoscaler.py`, `tests/unit/test_cost_optimizer.py`, `tests/benchmark/test_autoscaling_simulation.py` | `benchmarks/autoscaling_simulation.py`, `benchmarks/results/autoscaling_simulation_latest.json`, `benchmarks/results/autoscaling_simulation_latest.md` | Scale-up logs target worker count only; it does not create Kubernetes pods or Docker workers. Cost values are estimated/simulated. |
 | Added deterministic autoscaling simulation evidence. | `benchmarks/autoscaling_simulation.py` | `tests/benchmark/test_autoscaling_simulation.py` | `benchmarks/results/autoscaling_simulation_latest.*` | Simulation only; no live traffic, GPU, or Kubernetes measurement. |
 | Added a local stack smoke/load benchmark for router -> scheduler -> worker-path evidence. | `benchmarks/local_stack_benchmark.py`, `services/router/main.py`, `services/scheduler/main.py`, `services/worker/main.py` | `tests/benchmark/test_local_stack_benchmark.py` | `benchmarks/results/local_stack_benchmark_latest.json`, `benchmarks/results/local_stack_benchmark_latest.md` | Measures local router enqueue-response latency, not production performance or completed inference latency. Worker host metrics were unavailable because port 8002 is not published. |
-| Added monitoring configuration for emitted metrics. | `services/router/main.py`, `services/scheduler/main.py`, `services/worker/main.py`, `monitoring/prometheus/prometheus.yml`, `monitoring/prometheus/alerts.yml`, `monitoring/grafana/inference-dashboard.json` | `py_compile` verifies changed modules | README monitoring notes | No Grafana screenshot or live Prometheus scrape validation. GPU utilization is not emitted. |
+| Added monitoring configuration for emitted metrics. | `services/router/main.py`, `services/scheduler/main.py`, `services/worker/main.py`, `monitoring/prometheus/prometheus.yml`, `monitoring/prometheus/alerts.yml`, `monitoring/grafana/inference-dashboard.json` | `py_compile` verifies changed modules | `docs/architecture.md` metrics section | No Grafana screenshot or live Prometheus scrape validation. GPU utilization is not emitted. |
 | Added Docker Compose and Kubernetes manifests. | `docker-compose.yml`, `kubernetes/*.yml`, service Dockerfiles | Not covered by automated tests in this sprint | README quickstart | Manifests are configuration evidence, not proof of production Kubernetes operation. |
 
 ## Test Evidence

@@ -32,7 +32,7 @@ benchmark:
 	python benchmarks/gpu_utilization.py
 
 case-study:
-	python case-study/generate_charts.py
+	@echo See docs/case-study.md
 
 deploy-k8s:
 	kubectl apply -f kubernetes/
@@ -48,7 +48,7 @@ lint:
 	black --check services/ tests/ benchmarks/
 
 format:
-	black services/ tests/ benchmarks/ case-study/
+	black services/ tests/ benchmarks/
 	ruff check --fix services/ tests/ benchmarks/
 
 type-check:
